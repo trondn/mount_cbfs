@@ -9,19 +9,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
-
-#include "cJSON.h"
 #include <libcouchbase/couchbase.h>
 
-static const char *cbfs_host = "localhost:8484";
-static const char *cbfs_username;
-static const char *cbfs_password;
-static const char *couchbase_host = "localhost:8091";
-static const char *couchbase_username = "cbfs";
-static const char *couchbase_password;
-static const char *couchbase_bucket = "cbfs";
+#include "cJSON.h"
+#include "config.h"
 
 static lcb_t instance;
+struct config *cfg;
 
 static void error_handler(lcb_t instance, lcb_error_t err, const char *info)
 {
@@ -55,11 +49,13 @@ static void initialize(void)
     struct lcb_create_st copt;
     lcb_error_t error;
 
+    cfg = get_configuration();
+
     memset(&copt, 0, sizeof(copt));
-    copt.v.v0.host = couchbase_host;
-    copt.v.v0.user = couchbase_username;
-    copt.v.v0.passwd = couchbase_password;
-    copt.v.v0.bucket = couchbase_bucket;
+    copt.v.v0.host = cfg->couchbase_host;
+    copt.v.v0.user = cfg->couchbase_username;
+    copt.v.v0.passwd = cfg->couchbase_password;
+    copt.v.v0.bucket = cfg->couchbase_bucket;
 
     if ((error = lcb_create(&instance, &copt)) != LCB_SUCCESS) {
         fprintf(stderr, "Failed to create libcuchbase instance: %s\n",
@@ -89,9 +85,9 @@ static lcb_error_t uri_execute_get(const char *uri, struct SizedBuffer *sb) {
             .method = LCB_HTTP_METHOD_GET,
             .chunked = 0,
             .content_type = "application/x-www-form-urlencoded",
-            .host = cbfs_host,
-            .username = cbfs_username,
-            .password = cbfs_password
+            .host = cfg->cbfs_host,
+            .username = cfg->cbfs_username,
+            .password = cfg->cbfs_password
         }
     };
 

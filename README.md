@@ -74,13 +74,20 @@ filesystem.
 
 The content of your cbfs cluster should be available in /tmp/cbfs :)
 
-Requirements
-============
+If you want to connect to a CBFS/Couchbase server that isn't running
+on your own machine you need to create a configuration file named
+config.json in the current working directory with the following
+content:
 
-This example expect you to have a CBFS server and a Couchbase Cluster
-running on your local machine. In addition to that the "bucket" used
-for the CBFS server should be named cbfs, and it shouldn't have any
-password associated with itself.
+    {
+        "cbfs_host" : "localhost:8484",
+        "cbfs_username" : "",
+        "cbfs_password" : "",
+        "couchbase_host" : "localhost:8091",
+        "couchbase_username" : "cbfs",
+        "couchbase_password" : "",
+        "couchbase_bucket" : "cbfs"
+    }
 
 Limitations
 ===========
@@ -92,8 +99,6 @@ now I've got the following limitations:
 * Single threaded - I don't use any form for locking on the
   libcouchbase instance (and I don't use a pool of them), so if you
   try to use multiple threads it'll just crash on you.
-* All configuration values are hardcoded (address of Couchbase
-  cluster, port numbers, bucket name etc)
 * Read-only filesystem. I haven't added any write-related operations.
 
 But note.. With these limitations I got us down to a working example
