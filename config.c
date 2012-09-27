@@ -59,10 +59,25 @@ struct config *get_configuration(void) {
             } else {
                 fprintf(stderr, "Unknown field: %s\n", fields->string);
             }
+            fields = fields->next;
         }
 
         cJSON_Delete(doc);
         free(buffer);
     }
+
+    fprintf(stdout, "mount_cbfs using the following configuration:\n{\n");
+    fprintf(stdout, "    \"cbfs_host\" : \"%s\"\n", cfg.cbfs_host);
+    fprintf(stdout, "    \"cbfs_username\" : \"%s\"\n", cfg.cbfs_username);
+    fprintf(stdout, "    \"cbfs_password\" : \"%s\"\n", cfg.cbfs_password);
+    fprintf(stdout, "    \"couchbase_host\" : \"%s\"\n", cfg.couchbase_host);
+    fprintf(stdout, "    \"couchbase_username\" : \"%s\"\n",
+            cfg.couchbase_username);
+    fprintf(stdout, "    \"couchbase_password\" : \"%s\"\n",
+            cfg.couchbase_password);
+    fprintf(stdout, "    \"couchbase_bucket\" : \"%s\"\n",
+            cfg.couchbase_bucket);
+    fprintf(stdout, "}\n");
+
     return &cfg;
 }
