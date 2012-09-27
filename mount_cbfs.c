@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <ctype.h>
 #include <libcouchbase/couchbase.h>
 
 #include "cJSON.h"
@@ -28,6 +29,25 @@ struct SizedBuffer {
     char *data;
     size_t size;
 };
+
+static const char *urlencode(const char *path) {
+    static char buffer[1024];
+    int len = strlen(path);
+    int n = 0;
+
+    for (int ii = 0; ii < len; ++ii) {
+        if (isalpha(path[ii]) || isdigit(path[ii])) {
+            buffer[n++] = path[ii];
+        } else {
+            sprintf(buffer + n, "%%%02X", path[ii]);
+            n += 3;
+        }
+    }
+    buffer[n] = '\0';
+
+    return buffer;
+}
+
 
 static void complete_http_callback(lcb_http_request_t req, lcb_t instance,
                                    const void *cookie, lcb_error_t error,
@@ -97,7 +117,8 @@ static lcb_error_t uri_execute_get(const char *uri, struct SizedBuffer *sb) {
 static char *ls(const char *path, int *error) {
     *error = 0;
     char buffer[1024];
-    int len = snprintf(buffer, sizeof(buffer), "/.cbfs/list%s", path);
+    int len = snprintf(buffer, sizeof(buffer), "/.cbfs/list/%s",
+                       urlencode(path + 1));
     struct SizedBuffer sb = { .data = NULL, .size = 0 };
     lcb_error_t err = uri_execute_get(buffer, &sb);
 
@@ -119,7 +140,8 @@ static char *mystat(const char *path, int *error) {
 
     struct SizedBuffer sb = {.data = 0, .size = 0};
     char buffer[1024];
-    snprintf(buffer, sizeof(buffer), "/.cbfs/list%s?includeMeta=true", path);
+    snprintf(buffer, sizeof(buffer), "/.cbfs/list/%s?includeMeta=true",
+             urlencode(path + 1));
 
     lcb_error_t err = uri_execute_get(buffer, &sb);
     if (err != LCB_SUCCESS) {
